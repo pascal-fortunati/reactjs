@@ -1,0 +1,6 @@
+# dependencies
+memory/node_modules
+memory/backend/node_modules
+
+# production
+memory/build
