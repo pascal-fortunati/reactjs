@@ -26,6 +26,12 @@ type User = {
   completedRecipes: string[];
   favoriteRecipes: string[];
 };
+type ToastType = "success" | "error" | "info";
+type Toast = {
+  id: number;
+  type: ToastType;
+  message: string;
+};
 const SESSION_KEY = "snackflixCurrentUser";
 const COUNTRIES = [
   "American",
@@ -115,6 +121,14 @@ export function App() {
   const [activeView, setActiveView] = useState<"main" | "success" | "favorites">("main");
   const [completedRecipeForView, setCompletedRecipeForView] =
     useState<MealDetails | null>(null);
+  const [toasts, setToasts] = useState<Toast[]>([]);
+  function pushToast(message: string, type: ToastType = "info") {
+    const id = Date.now() + Math.random();
+    setToasts((prev) => [...prev, { id, type, message }]);
+    window.setTimeout(() => {
+      setToasts((current) => current.filter((toast) => toast.id !== id));
+    }, 3500);
+  }
   function setCurrentUserWithSession(user: User | null) {
     setCurrentUser(user);
     try {
@@ -273,6 +287,7 @@ export function App() {
       );
       setUsers(updatedUsers);
       setCurrentUserWithSession(updatedUser);
+      pushToast("Recette réussie !", "success");
       (async () => {
         try {
           await fetch("/api/profile/completed", {
@@ -289,6 +304,7 @@ export function App() {
       if (completedRecipes.includes(currentRecipe.idMeal)) return;
       const updated = [...completedRecipes, currentRecipe.idMeal];
       setCompletedRecipes(updated);
+      pushToast("Recette réussie !", "success");
     }
   }, [isComplete, currentRecipe, currentUser, users, completedRecipes]);
   function fetchRecipe(mealId: string) {
@@ -455,7 +471,10 @@ export function App() {
   }, [currentUser, allMealsForTags]);
 
   function handleToggleFavorite(mealId: string) {
-    if (!currentUser) return;
+    if (!currentUser) {
+      pushToast("Connecte-toi pour gérer tes favoris", "error");
+      return;
+    }
     const currentList = currentUser.favoriteRecipes || [];
     const exists = currentList.includes(mealId);
     const nextList = exists
@@ -467,6 +486,11 @@ export function App() {
     };
     setUsers((prev) => prev.map((u) => (u.id === updatedUser.id ? updatedUser : u)));
     setCurrentUserWithSession(updatedUser);
+    if (exists) {
+      pushToast("Recette retirée des favoris", "info");
+    } else {
+      pushToast("Recette ajoutée aux favoris", "success");
+    }
     (async () => {
       try {
         await fetch("/api/profile/favorites", {
@@ -477,7 +501,9 @@ export function App() {
             recipeId: mealId,
           }),
         });
-      } catch {}
+      } catch {
+        pushToast("Impossible de synchroniser les favoris avec le serveur", "error");
+      }
     })();
   }
   useEffect(() => {
@@ -813,6 +839,7 @@ export function App() {
             return [...filtered, created];
           });
           setCurrentUserWithSession(created);
+          pushToast("Compte créé avec succès", "success");
         }}
         onLogin={async (username, password) => {
           const response = await fetch("/api/login", {
@@ -836,9 +863,11 @@ export function App() {
             return [...filtered, loggedIn];
           });
           setCurrentUserWithSession(loggedIn);
+          pushToast("Connexion réussie", "success");
         }}
         onLogout={() => {
           setCurrentUserWithSession(null);
+          pushToast("Déconnexion effectuée", "info");
         }}
         onChangeAvatar={(avatarUrl) => {
           if (!currentUser) return;
@@ -962,6 +991,34 @@ export function App() {
               )}
             </div>
           </aside>
+        </div>
+      )}
+
+      {toasts.length > 0 && (
+        <div className="fixed top-4 right-4 z-50 flex flex-col gap-2">
+          {toasts.map((toast) => {
+            const colorClasses =
+              toast.type === "success"
+                ? "border-emerald-500/80 bg-emerald-500/10 text-emerald-100 shadow-[0_0_16px_rgba(16,185,129,0.35)]"
+                : toast.type === "error"
+                ? "border-red-500/80 bg-red-500/10 text-red-100 shadow-[0_0_16px_rgba(239,68,68,0.35)]"
+                : "border-sky-500/80 bg-sky-500/10 text-sky-100 shadow-[0_0_16px_rgba(56,189,248,0.35)]";
+            return (
+              <div
+                key={toast.id}
+                className={`flex items-center gap-3 px-4 py-2 rounded-xl border bg-black/85 backdrop-blur-md text-sm ${colorClasses}`}
+              >
+                <span className="material-icons text-sm">
+                  {toast.type === "success"
+                    ? "check_circle"
+                    : toast.type === "error"
+                    ? "error"
+                    : "info"}
+                </span>
+                <span>{toast.message}</span>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
