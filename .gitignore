@@ -1,6 +1,12 @@
 # dependencies
+cinetech/frontend/node_modules
+cinetech/backend/node_modules
 memory/node_modules
 memory/backend/node_modules
+craftmeal/node_modules
+meteo/node_modules
+todolist/node_modules
+uno/node_modules
 
 # production
 memory/build
