@@ -1,0 +1,20 @@
+[
+  {
+    "id": "gega1ab4hvhmkmhzizy",
+    "username": "Zeigadis",
+    "passwordHash": "$2b$10$7tGR79ggh9cBmnTRNwTwb.4mm0VkRTBXeQOK/ywreSa82ZNWoNgHC",
+    "avatarUrl": "https://api.dicebear.com/9.x/thumbs/svg?seed=kokiri",
+    "completedRecipes": [
+      "52776",
+      "53065",
+      "52903",
+      "52765",
+      "52764",
+      "52767",
+      "52853",
+      "52772",
+      "52831"
+    ],
+    "favoriteRecipes": []
+  }
+]

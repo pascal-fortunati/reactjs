@@ -1,0 +1,1 @@
+// @tailwindcss/vite gère PostCSS automatiquement
