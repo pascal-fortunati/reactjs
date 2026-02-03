@@ -1,7 +1,5 @@
-// Champ de recherche avec debounce 500ms
 import { useEffect, useState } from 'react'
 
-// Informe le parent des changements de saisie après 500ms
 function SearchBar({ onSearch, placeholder = 'Rechercher un film ou une série…', autoFocus = false }) {
   const [value, setValue] = useState('')
 

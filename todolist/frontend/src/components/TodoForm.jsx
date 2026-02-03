@@ -10,7 +10,7 @@ function TodoForm({ onAjouter }) {
   const [categorie, setCategorie] = useState('Personnel');
   const [dateLimite, setDateLimite] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (inputValue.trim() === '') {
@@ -23,9 +23,11 @@ function TodoForm({ onAjouter }) {
       return;
     }
     
-    onAjouter(inputValue, categorie, dateLimite);
-    setInputValue('');
-    setDateLimite('');
+    const ok = await onAjouter(inputValue, categorie, dateLimite);
+    if (ok) {
+      setInputValue('');
+      setDateLimite('');
+    }
   };
   
   // Icône de catégorie

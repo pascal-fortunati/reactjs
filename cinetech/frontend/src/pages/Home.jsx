@@ -1,4 +1,3 @@
-// Page d'accueil: bandeau héro + carrousels populaires
 import { useEffect, useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { getPopularMovies, getFavorites, getPopularSeries } from '../services/api'
@@ -8,7 +7,6 @@ import SkeletonMovieCard from '../components/SkeletonMovieCard'
 import HeroBanner from '../components/HeroBanner'
 import FavoriteButton from '../components/FavoriteButton'
 
-// Charge films/séries populaires, calcule favoris et met en avant
 function Home() {
 
   const {
@@ -44,7 +42,6 @@ function Home() {
   const [featuredIndex, setFeaturedIndex] = useState(0)
   const featuredMovie = popularMovieResults[featuredIndex]
 
-  // Rotation automatique du film mis en avant
   useEffect(() => {
     if (popularMovieResults.length === 0) return
     const timer = window.setInterval(() => {
@@ -55,7 +52,6 @@ function Home() {
     }
   }, [popularMovieResults])
 
-  // Footer des cartes: année + bouton favoris
   const renderFooter = (movie) => {
     const d = movie.release_date || movie.first_air_date
     const year = d ? new Date(d).getFullYear() : '—'

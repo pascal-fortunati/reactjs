@@ -1,6 +1,7 @@
-# dependencies
+# Projet Github
 cinetech/frontend/node_modules
 cinetech/backend/node_modules
+cinetech/backend/.env/
 memory/node_modules
 memory/backend/node_modules
 craftmeal/node_modules
@@ -10,3 +11,7 @@ uno/node_modules
 
 # production
 memory/build
+
+# Projet privé
+cinetech/next/
+snackflix/

@@ -9,12 +9,10 @@ import PaletteOutlinedIcon from '@mui/icons-material/PaletteOutlined';
 import CloseIcon from '@mui/icons-material/Close';
 import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
 import Swal from 'sweetalert2';
+import { useTodos } from './hooks/useTodos';
 
 function App() {
-  const [todos, setTodos] = useState(() => {
-    const savedTodos = localStorage.getItem('todos');
-    return savedTodos ? JSON.parse(savedTodos) : [];
-  });
+  const { todos, setTodos, ajouterTodo, toggleTodo, supprimerTodo, editerTodo, supprimerTous } = useTodos();
   
   const [filtre, setFiltre] = useState('tous');
   const [draggedItem, setDraggedItem] = useState(null);
@@ -24,57 +22,11 @@ function App() {
     return localStorage.getItem('theme') || 'light';
   });
 
-  // Sauvegarde des todos dans localStorage à chaque modification
-  useEffect(() => {
-    localStorage.setItem('todos', JSON.stringify(todos));
-  }, [todos]);
-
   // Appliquer le thème
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('theme', theme);
   }, [theme]);
-
-  // Ajout d'une nouvelle tâche
-  const ajouterTodo = (text, categorie, dateLimite) => {
-    const nouveauTodo = {
-      id: Date.now(),
-      text: text,
-      completed: false,
-      categorie: categorie,
-      dateLimite: dateLimite
-    };
-    setTodos([...todos, nouveauTodo]);
-    
-    Swal.fire({
-      icon: 'success',
-      title: 'Tâche ajoutée !',
-      text: text,
-      timer: 2000,
-      showConfirmButton: false,
-      position: 'top-end',
-      toast: true
-    });
-  };
-
-  // Basculement de l'état d'une tâche
-  const toggleTodo = (id) => {
-    setTodos(todos.map(todo => 
-      todo.id === id ? { ...todo, completed: !todo.completed } : todo
-    ));
-  };
-
-  // Suppression d'une tâche
-  const supprimerTodo = (id) => {
-    setTodos(todos.filter(todo => todo.id !== id));
-  };
-
-  // Édition d'une tâche
-  const editerTodo = (id, nouveauTexte) => {
-    setTodos(todos.map(todo =>
-      todo.id === id ? { ...todo, text: nouveauTexte } : todo
-    ));
-  };
 
   // Suppression de toutes les tâches
   const toutSupprimer = async () => {
@@ -90,14 +42,17 @@ function App() {
     });
 
     if (result.isConfirmed) {
-      setTodos([]);
-      Swal.fire({
-        icon: 'success',
-        title: 'Supprimé !',
-        text: 'Toutes les tâches ont été supprimées.',
-        timer: 2000,
-        showConfirmButton: false
-      });
+      const ids = todos.map((t) => t.id);
+      const ok = await supprimerTous(ids);
+      if (ok) {
+        Swal.fire({
+          icon: 'success',
+          title: 'Supprimé !',
+          text: 'Toutes les tâches ont été supprimées.',
+          timer: 2000,
+          showConfirmButton: false,
+        });
+      }
     }
   };
 
@@ -236,10 +191,11 @@ function App() {
       <div className="max-w-5xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-6xl font-extrabold text-primary mb-3">
-            Ma Todolist
-          </h1>
-          <p className="text-base-content opacity-70 text-lg">Gérez vos tâches avec style</p>
+          <img
+            src="/l_todolist.png"
+            alt="Logo To-Do-List"
+            className="mx-auto mb-3 w-30 sm:w-30 md:w-30"
+          />
         </div>
         
         {/* Formulaire */}
@@ -250,18 +206,18 @@ function App() {
         {/* Barre de recherche */}
         {totalTaches > 0 && (
           <div className="mb-6">
-            <div className="relative">
-              <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-base-content opacity-40">
-                <SearchOutlinedIcon />
+            <label className="input input-bordered flex items-center gap-2 w-full mr-2">
+              <span className="text-base-content opacity-40 pointer-events-none">
+                <SearchOutlinedIcon sx={{ fontSize: 20 }} />
               </span>
               <input
                 type="text"
                 value={recherche}
                 onChange={(e) => setRecherche(e.target.value)}
                 placeholder="Rechercher une tâche..."
-                className="input input-bordered w-full pl-12 mr-2"
+                className="grow bg-transparent"
               />
-            </div>
+            </label>
           </div>
         )}
         

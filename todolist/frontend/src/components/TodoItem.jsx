@@ -14,20 +14,22 @@ function TodoItem({ todo, onToggle, onSupprimer, onEditer, onDragStart, onDragOv
   const [edition, setEdition] = useState(false);
   const [texteEdition, setTexteEdition] = useState(todo.text);
 
-  const handleSubmitEdition = (e) => {
+  const handleSubmitEdition = async (e) => {
     e.preventDefault();
     if (texteEdition.trim() !== '') {
-      onEditer(todo.id, texteEdition);
-      setEdition(false);
-      
-      Swal.fire({
-        icon: 'success',
-        title: 'Tâche modifiée !',
-        timer: 1500,
-        showConfirmButton: false,
-        position: 'top-end',
-        toast: true
-      });
+      const ok = await onEditer(todo.id, texteEdition);
+      if (ok) {
+        setEdition(false);
+
+        Swal.fire({
+          icon: 'success',
+          title: 'Tâche modifiée !',
+          timer: 1500,
+          showConfirmButton: false,
+          position: 'top-end',
+          toast: true
+        });
+      }
     }
   };
 
@@ -49,15 +51,17 @@ function TodoItem({ todo, onToggle, onSupprimer, onEditer, onDragStart, onDragOv
     });
 
     if (result.isConfirmed) {
-      onSupprimer(todo.id);
-      Swal.fire({
-        icon: 'success',
-        title: 'Supprimé !',
-        timer: 1500,
-        showConfirmButton: false,
-        position: 'top-end',
-        toast: true
-      });
+      const ok = await onSupprimer(todo.id);
+      if (ok) {
+        Swal.fire({
+          icon: 'success',
+          title: 'Supprimé !',
+          timer: 1500,
+          showConfirmButton: false,
+          position: 'top-end',
+          toast: true
+        });
+      }
     }
   };
   
