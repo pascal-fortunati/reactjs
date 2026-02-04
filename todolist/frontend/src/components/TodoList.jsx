@@ -1,7 +1,7 @@
 import TodoItem from './TodoItem';
 import InboxOutlinedIcon from '@mui/icons-material/InboxOutlined';
 
-function TodoList({ todos, onToggle, onSupprimer, onEditer, onDragStart, onDragOver, onDrop, draggedItem }) {
+function TodoList({ todos, onToggle, onSupprimer, onEditer, onDragStart, onDragOver, onDrop, onDragEnd, draggedItem }) {
   if (todos.length === 0) {
     return (
       <div className="card bg-base-100 shadow-xl">
@@ -28,6 +28,7 @@ function TodoList({ todos, onToggle, onSupprimer, onEditer, onDragStart, onDragO
           onDragStart={onDragStart}
           onDragOver={onDragOver}
           onDrop={onDrop}
+          onDragEnd={onDragEnd}
           isDragging={draggedItem?.id === todo.id}
         />
       ))}

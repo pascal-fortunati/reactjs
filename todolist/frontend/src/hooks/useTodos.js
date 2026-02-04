@@ -18,6 +18,7 @@ export function useTodos() {
         setTodos(Array.isArray(data) ? data.map(normalizeTodo) : []);
       } catch (err) {
         if (cancelled) return;
+        if (err?.status === 401) return;
         Swal.fire({
           icon: 'error',
           title: 'Impossible de charger les tâches',
@@ -133,11 +134,15 @@ export function useTodos() {
 
   // Fonction pour supprimer toutes les tâches sélectionnées
   const supprimerTous = async (ids) => {
+    const safeIds = Array.isArray(ids) ? ids.filter(Boolean) : [];
+    if (safeIds.length === 0) return true;
+
     const current = todos;
-    setTodos([]);
+    const idsSet = new Set(safeIds);
+    setTodos((prev) => prev.filter((t) => !idsSet.has(t.id)));
 
     try {
-      await Promise.all(ids.map((id) => todosApi.remove(id)));
+      await Promise.all(safeIds.map((id) => todosApi.remove(id)));
       return true;
     } catch (err) {
       setTodos(current);

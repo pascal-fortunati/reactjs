@@ -10,12 +10,13 @@ import PriorityHighOutlinedIcon from '@mui/icons-material/PriorityHighOutlined';
 import EventOutlinedIcon from '@mui/icons-material/EventOutlined';
 import Swal from 'sweetalert2';
 
-function TodoItem({ todo, onToggle, onSupprimer, onEditer, onDragStart, onDragOver, onDrop, isDragging }) {
+function TodoItem({ todo, onToggle, onSupprimer, onEditer, onDragStart, onDragOver, onDrop, onDragEnd, isDragging }) {
   const [edition, setEdition] = useState(false);
   const [texteEdition, setTexteEdition] = useState(todo.text);
 
   const handleSubmitEdition = async (e) => {
     e.preventDefault();
+    if (todo.completed) return;
     if (texteEdition.trim() !== '') {
       const ok = await onEditer(todo.id, texteEdition);
       if (ok) {
@@ -39,13 +40,12 @@ function TodoItem({ todo, onToggle, onSupprimer, onEditer, onDragStart, onDragOv
   };
 
   const handleSupprimer = async () => {
+    if (todo.completed) return;
     const result = await Swal.fire({
       title: 'Supprimer cette tâche ?',
       text: todo.text,
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#d33',
-      cancelButtonColor: '#3085d6',
       confirmButtonText: 'Oui, supprimer !',
       cancelButtonText: 'Annuler'
     });
@@ -101,6 +101,7 @@ function TodoItem({ todo, onToggle, onSupprimer, onEditer, onDragStart, onDragOv
     <div 
       draggable={!edition}
       onDragStart={() => onDragStart(todo)}
+      onDragEnd={onDragEnd}
       onDragOver={onDragOver}
       onDrop={() => onDrop(todo)}
       className={`card bg-base-100 shadow-lg hover:shadow-xl transition-all duration-300 mb-3 cursor-move ${
@@ -126,7 +127,7 @@ function TodoItem({ todo, onToggle, onSupprimer, onEditer, onDragStart, onDragOv
                 value={texteEdition}
                 onChange={(e) => setTexteEdition(e.target.value)}
                 autoFocus
-                className="input input-bordered input-primary flex-1"
+                className="input input-primary flex-1"
               />
               <button 
                 type="submit"
@@ -177,14 +178,16 @@ function TodoItem({ todo, onToggle, onSupprimer, onEditer, onDragStart, onDragOv
               <div className="flex gap-2">
                 <button
                   onClick={() => setEdition(true)}
-                  className="btn btn-info btn-sm gap-1"
+                  disabled={todo.completed}
+                  className={`btn btn-info btn-sm gap-1 ${todo.completed ? 'btn-disabled' : ''}`}
                 >
                   <EditOutlinedIcon fontSize="small" />
                   Éditer
                 </button>
                 <button
                   onClick={handleSupprimer}
-                  className="btn btn-error btn-sm gap-1"
+                  disabled={todo.completed}
+                  className={`btn btn-error btn-sm gap-1 ${todo.completed ? 'btn-disabled' : ''}`}
                 >
                   <DeleteOutlineIcon fontSize="small" />
                   Supprimer

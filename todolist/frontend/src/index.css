@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+@plugin "daisyui" {
+  themes: light --default, dark --prefersdark, cupcake, bumblebee, emerald, corporate, synthwave, retro, cyberpunk, valentine, halloween, garden, forest, aqua, lofi, pastel, fantasy, wireframe, black, luxury, dracula, cmyk, autumn, business, acid, lemonade, night, coffee, winter, dim, nord, sunset;
+}
+
 /* Scrollbar personnalisée globale */
 * {
   scrollbar-width: thin;
@@ -62,4 +66,45 @@ body {
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+.swal2-container {
+  font-family: inherit;
+}
+
+.swal2-timer-progress-bar {
+  background: oklch(var(--p));
+}
+
+.swal2-icon.swal2-success,
+.swal2-icon.swal2-success .swal2-success-ring {
+  border-color: oklch(var(--su));
+}
+
+.swal2-icon.swal2-success [class^='swal2-success-line'] {
+  background-color: oklch(var(--su));
+}
+
+.swal2-icon.swal2-error {
+  border-color: oklch(var(--er));
+  color: oklch(var(--er));
+}
+
+.swal2-icon.swal2-error [class^='swal2-x-mark-line'] {
+  background-color: oklch(var(--er));
+}
+
+.swal2-icon.swal2-warning {
+  border-color: oklch(var(--wa));
+  color: oklch(var(--wa));
+}
+
+.swal2-icon.swal2-info {
+  border-color: oklch(var(--in));
+  color: oklch(var(--in));
+}
+
+.swal2-icon.swal2-question {
+  border-color: oklch(var(--p));
+  color: oklch(var(--p));
 }

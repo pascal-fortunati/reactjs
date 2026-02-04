@@ -1,9 +1,12 @@
 import crypto from 'node:crypto';
 import { Router } from 'express';
 import { pool } from '../db/pool.js';
+import { requireAuth } from '../auth/requireAuth.js';
 
 // Routeur pour les todos
 export const todosRouter = Router();
+
+todosRouter.use(requireAuth);
 
 // Catégories autorisées
 const allowedCategories = new Set(['Personnel', 'Travail', 'Urgent']);
@@ -52,8 +55,10 @@ function parseDateLimite(value) {
 // Retourne la liste de tous les todos triés par date de création décroissante  
 todosRouter.get('/', async (req, res, next) => {
   try {
+    const userId = req.user?.id;
     const [rows] = await pool.query(
-      'SELECT id, text, categorie, date_limite AS dateLimite, completed, created_at AS createdAt, updated_at AS updatedAt FROM todos ORDER BY created_at DESC'
+      'SELECT id, text, categorie, date_limite AS dateLimite, completed, created_at AS createdAt, updated_at AS updatedAt FROM todos WHERE user_id = ? ORDER BY created_at DESC',
+      [userId]
     );
     res.status(200).json(rows);
   } catch (err) {
@@ -66,9 +71,10 @@ todosRouter.get('/', async (req, res, next) => {
 todosRouter.get('/:id', async (req, res, next) => {
   try {
     const { id } = req.params;
+    const userId = req.user?.id;
     const [rows] = await pool.query(
-      'SELECT id, text, categorie, date_limite AS dateLimite, completed, created_at AS createdAt, updated_at AS updatedAt FROM todos WHERE id = ? LIMIT 1',
-      [id]
+      'SELECT id, text, categorie, date_limite AS dateLimite, completed, created_at AS createdAt, updated_at AS updatedAt FROM todos WHERE id = ? AND user_id = ? LIMIT 1',
+      [id, userId]
     );
 
     if (!rows[0]) return res.status(404).json({ error: 'Todo non trouvé' });
@@ -82,6 +88,7 @@ todosRouter.get('/:id', async (req, res, next) => {
 // Crée un nouveau todo avec les données fournies
 todosRouter.post('/', async (req, res, next) => {
   try {
+    const userId = req.user?.id;
     const text = typeof req.body?.text === 'string' ? req.body.text.trim() : '';
     const completedParsed = typeof req.body?.completed === 'undefined' ? false : parseCompleted(req.body?.completed);
     if (completedParsed === null) {
@@ -95,8 +102,9 @@ todosRouter.post('/', async (req, res, next) => {
 
     const id = crypto.randomUUID();
 
-    await pool.query('INSERT INTO todos (id, text, categorie, date_limite, completed) VALUES (?, ?, ?, ?, ?)', [
+    await pool.query('INSERT INTO todos (id, user_id, text, categorie, date_limite, completed) VALUES (?, ?, ?, ?, ?, ?)', [
       id,
+      userId,
       text,
       categorie,
       dateLimite,
@@ -104,8 +112,8 @@ todosRouter.post('/', async (req, res, next) => {
     ]);
 
     const [rows] = await pool.query(
-      'SELECT id, text, categorie, date_limite AS dateLimite, completed, created_at AS createdAt, updated_at AS updatedAt FROM todos WHERE id = ? LIMIT 1',
-      [id]
+      'SELECT id, text, categorie, date_limite AS dateLimite, completed, created_at AS createdAt, updated_at AS updatedAt FROM todos WHERE id = ? AND user_id = ? LIMIT 1',
+      [id, userId]
     );
     res.status(201).json(rows[0]);
   } catch (err) {
@@ -118,6 +126,7 @@ todosRouter.post('/', async (req, res, next) => {
 todosRouter.put('/:id', async (req, res, next) => {
   try {
     const { id } = req.params;
+    const userId = req.user?.id;
     const patch = {};
 
     // Validation et nettoyage du champ text
@@ -165,16 +174,16 @@ todosRouter.put('/:id', async (req, res, next) => {
     const setSql = fields.map((f) => `${f} = ?`).join(', ');
     const values = fields.map((f) => patch[f]);
     const [result] = await pool.query(
-      `UPDATE todos SET ${setSql} WHERE id = ?`,
-      [...values, id]
+      `UPDATE todos SET ${setSql} WHERE id = ? AND user_id = ?`,
+      [...values, id, userId]
     );
 
     if (result.affectedRows === 0) return res.status(404).json({ error: 'Todo non trouvé' });
 
     // Récupération du todo mis à jour
     const [rows] = await pool.query(
-      'SELECT id, text, categorie, date_limite AS dateLimite, completed, created_at AS createdAt, updated_at AS updatedAt FROM todos WHERE id = ? LIMIT 1',
-      [id]
+      'SELECT id, text, categorie, date_limite AS dateLimite, completed, created_at AS createdAt, updated_at AS updatedAt FROM todos WHERE id = ? AND user_id = ? LIMIT 1',
+      [id, userId]
     );
     res.status(200).json(rows[0]);
   } catch (err) {
@@ -187,7 +196,8 @@ todosRouter.put('/:id', async (req, res, next) => {
 todosRouter.delete('/:id', async (req, res, next) => {
   try {
     const { id } = req.params;
-    const [result] = await pool.query('DELETE FROM todos WHERE id = ?', [id]);
+    const userId = req.user?.id;
+    const [result] = await pool.query('DELETE FROM todos WHERE id = ? AND user_id = ?', [id, userId]);
     if (result.affectedRows === 0) return res.status(404).json({ error: 'Todo non trouvé' });
     res.status(204).send();
   } catch (err) {

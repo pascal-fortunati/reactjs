@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import cors from 'cors';
 import express from 'express';
+import { authRouter } from './auth/router.js';
 import { todosRouter } from './todos/router.js';
 
 // Création de l'application Express
@@ -26,6 +27,7 @@ app.get('/api/health', (req, res) => {
 });
 
 // Utilisation du routeur pour les todos
+app.use('/api/auth', authRouter);
 app.use('/api/todos', todosRouter);
 
 // Gestion des routes non trouvées
